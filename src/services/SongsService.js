@@ -8,6 +8,18 @@ class SongsService {
     this._pool = new Pool();
   }
 
+  async checkIfSongsAvalaible(id) {
+    const checkIfSongAvailable_Query = {
+      text: 'select song_id from playlist_songs where song_id = $1',
+      values: [id]
+    }
+
+    const checkResult = await this._pool.query(checkIfSongAvailable_Query)
+    if (!checkResult.rows.length) {
+      throw new NotFoundError('Lagu gagal ditambahkan. Id lagu tidak ditemukan')
+    }
+  }
+
   async addSong(
     { title, year, genre, performer, duration, albumId }
   ) {
