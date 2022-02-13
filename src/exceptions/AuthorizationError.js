@@ -1,4 +1,4 @@
-const ClientError = require("./ClientError");
+const ClientError = require('./ClientError');
 
 class AuthorizationError extends ClientError {
     constructor(message) {

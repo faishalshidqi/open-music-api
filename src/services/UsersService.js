@@ -4,7 +4,6 @@ const { nanoid } = require('nanoid');
 const bcrypt = require('bcrypt');
 const NotFoundError = require('../exceptions/NotFoundError');
 const AuthenticationError = require('../exceptions/AuthenticationError');
-const {query} = require("@hapi/hapi/lib/validation");
 
 class UsersService {
     constructor() {
