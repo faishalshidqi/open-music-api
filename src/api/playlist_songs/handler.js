@@ -53,13 +53,15 @@ class Playlist_SongsHandler {
             const { id: credentialId } = request.auth.credentials
             const { id } = request.params
             await this._playlistsService.verifyPlaylistAccess(id, credentialId)
-            //const playlist = await this._playlistsService.getPlaylists(id)
+            const playlist = await this._playlistsService.getPlaylists(id)
+            console.log(playlist)
             const songs = await this._playlist_SongsService.getSongsFromPlaylist(id)
 
             return {
                 status: 'success',
                 data: {
                     playlist: {
+                        playlist,
                         songs
                     }
                 }

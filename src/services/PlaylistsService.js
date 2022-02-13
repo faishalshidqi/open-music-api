@@ -29,7 +29,8 @@ class PlaylistsService {
 
      async getPlaylists(owner) {
           const query = {
-               text: `select playlists.id, playlists.name, playlists.owner from playlists left join collaborations on collaborations.playlist_id = playlists.id where playlists.owner = $1 or collaborations.user_id = $1 group by playlists.id`,
+               //text: `select playlists.id, playlists.name, playlists.owner from playlists left join collaborations on collaborations.playlist_id = playlists.id where playlists.owner = $1 or collaborations.user_id = $1 group by playlists.id`,
+               text: 'select id, name, owner from playlists where owner = $1',
                values: [owner]
           }
 
