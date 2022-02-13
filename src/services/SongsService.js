@@ -10,7 +10,7 @@ class SongsService {
 
   async checkIfSongsAvalaible(id) {
     const checkIfSongAvailable_Query = {
-      text: 'select song_id from playlist_songs where song_id = $1',
+      text: 'select id from songs where id = $1',
       values: [id]
     }
 
