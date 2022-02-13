@@ -39,8 +39,8 @@ const CollaborationsService = require('./services/CollaborationsService')
 const CollaborationsValidator = require('./validator/collaborations')
 
 const init = async () => {
-    const collaborationsService = new CollaborationsService()
-    const playlistsService = new PlaylistsService(collaborationsService)
+    //const collaborationsService = new CollaborationsService()
+    const playlistsService = new PlaylistsService(/*collaborationsService*/)
     const playlist_SongsService = new Playlist_SongsService()
     const albumsService = new AlbumsService()
     const songsService = new SongsService()
@@ -124,14 +124,14 @@ const init = async () => {
                 validator: AuthenticationsValidator
             }
         },
-        {
+        /*{
             plugin: collaborations,
             options: {
                 collaborationsService,
                 playlistsService,
                 validator: CollaborationsValidator
             }
-        }
+        }*/
     ])
 
 

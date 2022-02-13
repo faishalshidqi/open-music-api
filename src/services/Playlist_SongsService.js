@@ -4,9 +4,9 @@ const InvariantError = require("../exceptions/InvariantError");
 const NotFoundError = require("../exceptions/NotFoundError");
 
 class Playlist_SongsService {
-    constructor(collaborationsService) {
+    constructor(/*collaborationsService*/) {
         this._pool = new Pool()
-        this._collaborationsService = collaborationsService
+        //this._collaborationsService = collaborationsService
 
     }
 

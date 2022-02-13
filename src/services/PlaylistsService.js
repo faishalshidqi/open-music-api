@@ -5,9 +5,9 @@ const NotFoundError = require("../exceptions/NotFoundError");
 const AuthorizationError = require("../exceptions/AuthorizationError");
 
 class PlaylistsService {
-     constructor(collaborationsService) {
+     constructor(/*collaborationsService*/) {
           this._pool = new Pool()
-          this._collaborationsService = collaborationsService
+          //this._collaborationsService = collaborationsService
      }
 
      async addPlaylist({ name, owner }) {
@@ -67,7 +67,7 @@ class PlaylistsService {
           }
      }
 
-     async verifyPlaylistAccess(playlistId, userId) {
+     /*async verifyPlaylistAccess(playlistId, userId) {
           try {
                await this.verifyPlaylistOwner(playlistId, userId)
           } catch (error) {
@@ -80,7 +80,7 @@ class PlaylistsService {
                     throw error
                }
           }
-     }
+     }*/
 }
 
 module.exports = PlaylistsService
