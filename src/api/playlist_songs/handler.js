@@ -52,12 +52,9 @@ class Playlist_SongsHandler {
     async getPlaylist_SongsHandler(request, h) {
         try {
             const { id: credentialId } = request.auth.credentials
-            const { id, playlist_id } = request.params
+            const { id } = request.params
             await this._playlistsService.verifyPlaylistOwner(id, credentialId)
             const playlist = await this._playlistsService.getPlaylistByOwner(id, credentialId)
-            console.log(id)
-            console.log(playlist_id)
-            console.log(playlist)
             const songs = await this._playlist_SongsService.getSongsFromPlaylist(id)
 
             const { username } = await this._usersService.getUsernameById(credentialId)
@@ -65,8 +62,12 @@ class Playlist_SongsHandler {
             return {
                 status: 'success',
                 data: {
-                    playlist, username,
-                    songs
+                    playlist: {
+                        id: playlist.id,
+                        name: playlist.name,
+                        username,
+                        songs: songs
+                    }
                 }
             }
         } catch (error) {
