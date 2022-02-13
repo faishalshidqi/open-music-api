@@ -4,6 +4,7 @@ const { nanoid } = require('nanoid');
 const bcrypt = require('bcrypt');
 const NotFoundError = require('../exceptions/NotFoundError');
 const AuthenticationError = require('../exceptions/AuthenticationError');
+const {query} = require("@hapi/hapi/lib/validation");
 
 class UsersService {
     constructor() {
@@ -53,6 +54,20 @@ class UsersService {
 
         if (!result.rows.length) {
             throw new NotFoundError('User tidak ditemukan')
+        }
+
+        return result.rows[0]
+    }
+
+    async getUsernameById(id) {
+        const query = {
+            text: 'select username from users where id = $1',
+            values: [id]
+        }
+
+        const result = await this._pool.query(query)
+        if (!result.rows.length) {
+            throw new NotFoundError('Username tidak ditemukan')
         }
 
         return result.rows[0]

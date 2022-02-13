@@ -1,10 +1,11 @@
 const ClientError = require("../../exceptions/ClientError");
 
 class Playlist_SongsHandler {
-    constructor(playlist_SongsService, playlistsService, songsService, validator) {
+    constructor(playlist_SongsService, playlistsService, songsService, usersService, validator) {
         this._playlist_SongsService = playlist_SongsService
         this._playlistsService = playlistsService
         this._songsService = songsService
+        this._usersService = usersService
         this._validator = validator
 
         this.postPlaylist_SongHandler = this.postPlaylist_SongHandler.bind(this)
@@ -59,10 +60,12 @@ class Playlist_SongsHandler {
             console.log(playlist)
             const songs = await this._playlist_SongsService.getSongsFromPlaylist(id)
 
+            const { username } = await this._usersService.getUsernameById(credentialId)
+
             return {
                 status: 'success',
                 data: {
-                    playlist,
+                    playlist, username,
                     songs
                 }
             }

@@ -40,7 +40,7 @@ class PlaylistsService {
 
      async getPlaylistByOwner(id, owner) {
           const query = {
-               text: 'select id, name, owner from playlists where owner = $1 and id = $2',
+               text: 'select id, name from playlists where owner = $1 and id = $2',
                values: [owner, id]
           }
 
