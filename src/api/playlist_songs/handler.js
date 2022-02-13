@@ -20,7 +20,7 @@ class Playlist_SongsHandler {
             const { id: credentialId } = request.auth.credentials
 
             await this._playlistsService.verifyPlaylistAccess(id, credentialId)
-            await this._songsService.checkIfSongsAvalaible(id)
+            await this._songsService.checkIfSongsAvalaible(songId)
             await this._playlist_SongsService.addSongToPlaylist({ id, songId} )
 
             const response = h.response({
@@ -53,12 +53,15 @@ class Playlist_SongsHandler {
             const { id: credentialId } = request.auth.credentials
             const { id } = request.params
             await this._playlistsService.verifyPlaylistAccess(id, credentialId)
+            //const playlist = await this._playlistsService.getPlaylists(id)
             const songs = await this._playlist_SongsService.getSongsFromPlaylist(id)
 
             return {
                 status: 'success',
                 data: {
-                    songs
+                    playlist: {
+                        songs
+                    }
                 }
             }
         } catch (error) {
