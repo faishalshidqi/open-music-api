@@ -3,11 +3,24 @@ const { nanoid } = require('nanoid');
 const InvariantError = require('../exceptions/InvariantError');
 const NotFoundError = require('../exceptions/NotFoundError');
 const AuthorizationError = require('../exceptions/AuthorizationError');
+const ClientError = require('../exceptions/ClientError');
 
 class PlaylistsService {
      constructor(/*collaborationsService*/) {
           this._pool = new Pool()
           //this._collaborationsService = collaborationsService
+     }
+
+     async checkIfPlaylistsAvailable(id) {
+          const checkIfPlaylistsAvailable_Query = {
+               text: 'select id from playlists where id = $1',
+               values: [id]
+          }
+
+          const checkResult = await this._pool.query(checkIfPlaylistsAvailable_Query)
+          if (!checkResult.rows.length) {
+               throw new NotFoundError('Playlist gagal di-export. Id playlist tidak ditemukan')
+          }
      }
 
      async addPlaylist({ name, owner }) {
@@ -36,6 +49,16 @@ class PlaylistsService {
 
           const result = await this._pool.query(query)
           return result.rows
+     }
+
+     async getPlaylistById(id) {
+          const query = {
+               text: 'select playlists.id, playlists.name, playlists.owner from playlists left join playlist_songs on playlists.id = playlist_songs.playlist_id where playlist_songs.playlist_id = $1',
+               values: [id]
+          }
+
+          const result = await this._pool.query(query)
+          return result.rows[0]
      }
 
      async getPlaylistByOwner(id, owner) {
@@ -72,9 +95,41 @@ class PlaylistsService {
                throw new NotFoundError('Playlist tidak ditemukan')
           }
           const playlist = result.rows[0]
+          console.log(playlist)
           if (playlist.owner !== owner) {
                throw new AuthorizationError('Anda tidak berhak mengakses resource ini')
           }
+     }
+
+     async getOwnerPlaylistById(id) {
+          const query = {
+               text: 'select owner from playlists where id = $1',
+               values: [id]
+          }
+
+          const result = await this._pool.query(query)
+          return result.rows[0]
+     }
+
+     /*async checkIfAccessorLegit(id) {
+          try {
+               const query = {
+                    text: 'select * from playlists where id = $1',
+                    values: [id]
+               }
+               await this._pool.query(query)
+          } catch (error) {
+               if (error instanceof ClientError) {
+                    const response = {
+                                                     status: 'fail',
+                                                     message: error.message
+                    }
+                    response.code(error.statusCode)
+                    return response
+               }
+          }
+
+
      }
 
      /*async verifyPlaylistAccess(playlistId, userId) {
