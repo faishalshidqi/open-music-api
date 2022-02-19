@@ -26,7 +26,7 @@ class UserAlbumLikesService {
 
     async getLikesCount(albumId) {
         const query = {
-            text: 'select * from user_album_likes where album_id = $2',
+            text: 'select * from user_album_likes where album_id = $1',
             values: [albumId]
         }
 
@@ -43,21 +43,30 @@ class UserAlbumLikesService {
         const result = await this._pool.query(query)
 
         if (!result.rows.length) {
-            throw new NotFoundError('Like gagal dibatalkan. Id tidak ditemukan')
+            throw new InvariantError('Like gagal dibatalkan. Id tidak ditemukan')
         }
     }
 
     async verifyAlbumLikeByUser(userId, albumId) {
         const query = {
-            text: 'select user_id, album_id from user_album_likes where user_id = $1 and album_id = $2 returning id',
+            text: 'select * from user_album_likes where user_id = $1 and album_id = $2',
             values: [userId, albumId]
         }
 
         const result = await this._pool.query(query)
 
         if (!result.rows.length) {
-            throw new AuthenticationError('Anda belum memberikan like di album ini')
+            //throw new AuthenticationError('Anda belum memberikan like di album ini')
+            return false
         }
+
+        return true
+
+        /*if (!result.rows[0].album_id) {
+            await this.addLikeToAlbum(userId, albumId)
+        } else if (result.rows[0].album_id === albumId) {
+            await this.deleteLikeFromAlbum(userId, albumId)
+        }*/
     }
 }
 
