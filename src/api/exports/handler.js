@@ -12,15 +12,12 @@ class ExportsHandler {
         try {
             this._validator.validateExportPlaylist_SongsPayload(request.payload)
             const { playlistId } = request.params
-            const owner = await this._playlistsService.getOwnerPlaylistById(playlistId)
+            const { id: userId } = request.auth.credentials
 
-            //console.log(`playlistId: ${playlistId}`)
-            console.log(owner)
-            await this._playlistsService.verifyPlaylistOwner(playlistId, owner)
-            //await this._playlistsService.checkIfAccessorLegit(playlistId)
-            await this._playlistsService.checkIfPlaylistsAvailable(playlistId)
+            await this._playlistsService.verifyPlaylistOwner(playlistId, userId)
 
             const message = {
+                playlistId,
                 userId: request.auth.credentials.id,
                 targetEmail: request.payload.targetEmail
             }
@@ -29,14 +26,6 @@ class ExportsHandler {
             const response = h.response({
                 status: 'success',
                 message: 'Permintaan Anda sedang kami proses',
-                /*data: {
-                    playlist: {
-                        // TODO: get id, name, songs of the exported playlist
-                        id: playlist.id,
-                        name: playlist.name,
-                        songs: songs
-                    }
-                }*/
             })
             response.code(201)
             return response

@@ -3,7 +3,6 @@ const { nanoid } = require('nanoid');
 const InvariantError = require('../exceptions/InvariantError');
 const NotFoundError = require('../exceptions/NotFoundError');
 const AuthorizationError = require('../exceptions/AuthorizationError');
-const ClientError = require('../exceptions/ClientError');
 
 class PlaylistsService {
      constructor(/*collaborationsService*/) {
@@ -50,17 +49,6 @@ class PlaylistsService {
           const result = await this._pool.query(query)
           return result.rows
      }
-
-     async getPlaylistById(id) {
-          const query = {
-               text: 'select playlists.id, playlists.name, playlists.owner from playlists left join playlist_songs on playlists.id = playlist_songs.playlist_id where playlist_songs.playlist_id = $1',
-               values: [id]
-          }
-
-          const result = await this._pool.query(query)
-          return result.rows[0]
-     }
-
      async getPlaylistByOwner(id, owner) {
           const query = {
                text: 'select id, name from playlists where owner = $1 and id = $2',
@@ -95,57 +83,24 @@ class PlaylistsService {
                throw new NotFoundError('Playlist tidak ditemukan')
           }
           const playlist = result.rows[0]
-          console.log(playlist)
           if (playlist.owner !== owner) {
                throw new AuthorizationError('Anda tidak berhak mengakses resource ini')
           }
      }
-
-     async getOwnerPlaylistById(id) {
-          const query = {
-               text: 'select owner from playlists where id = $1',
-               values: [id]
-          }
-
-          const result = await this._pool.query(query)
-          return result.rows[0]
-     }
-
-     /*async checkIfAccessorLegit(id) {
-          try {
-               const query = {
-                    text: 'select * from playlists where id = $1',
-                    values: [id]
-               }
-               await this._pool.query(query)
-          } catch (error) {
-               if (error instanceof ClientError) {
-                    const response = {
-                                                     status: 'fail',
-                                                     message: error.message
-                    }
-                    response.code(error.statusCode)
-                    return response
-               }
-          }
-
-
-     }
-
      /*async verifyPlaylistAccess(playlistId, userId) {
-          try {
-               await this.verifyPlaylistOwner(playlistId, userId)
-          } catch (error) {
-               if (error instanceof NotFoundError) {
-                    throw error
-               }
                try {
-                    await this._collaborationsService.verifyCollaborator(playlistId, userId)
-               } catch {
-                    throw error
+                    await this.verifyPlaylistOwner(playlistId, userId)
+               } catch (error) {
+                    if (error instanceof NotFoundError) {
+                         throw error
+                    }
+                    try {
+                         await this._collaborationsService.verifyCollaborator(playlistId, userId)
+                    } catch {
+                         throw error
+                    }
                }
-          }
-     }*/
+          }*/
 }
 
 module.exports = PlaylistsService

@@ -8,14 +8,15 @@ class AlbumsService {
         this._pool = new Pool()
     }
 
-    /*async getDetailsAlbumById(id) {
+    async addCoverAlbum(id, coverurl) {
         const query = {
-            text: 'select * from songs where "albumId" = $1',
-            values: ["albumId"]
+            text: 'update albums set "coverUrl" = $2 where id = $1',
+            values: [id, coverurl]
         }
 
         const result = await this._pool.query(query)
-    }*/
+        return result.rows[0]
+    }
 
     async addAlbum({name, year}) {
         const id = 'album-' + nanoid(16)
@@ -41,7 +42,7 @@ class AlbumsService {
         const result = await this._pool.query(query)
 
         if (!result.rows.length) {
-            throw new NotFoundError('Catatan tidak ditemukan')
+            throw new NotFoundError('Album tidak ditemukan')
         }
 
         return result.rows[0]
@@ -69,7 +70,7 @@ class AlbumsService {
         const result = await this._pool.query(query)
 
         if (!result.rows.length) {
-            throw new NotFoundError('Catatan gagal dihapus. Id tidak ditemukan')
+            throw new NotFoundError('Album gagal dihapus. Id tidak ditemukan')
         }
     }
 }
