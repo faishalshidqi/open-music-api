@@ -2,7 +2,7 @@ const routes = (handler) => [
     {
         method: 'POST',
         path: '/albums/{id}/likes',
-        handler: handler.postLikeToAlbumHandler,
+        handler: handler.postUserLikeToAlbumHandler,
         options: {
             auth: 'open_music_jwt'
         }
@@ -10,11 +10,8 @@ const routes = (handler) => [
     {
         method: 'GET',
         path: '/albums/{id}/likes',
-        handler: handler.getLikesCountHandler,
-        /*options: {
-            auth: 'open_music_jwt'
-        }*/
-    },
+        handler: handler.getUserLikesHandler
+    }
 ]
 
 module.exports = routes

@@ -1,38 +1,37 @@
 const ClientError = require('../../exceptions/ClientError');
 
-class LikesHandler {
-    constructor(userAlbumLikesService, albumsService,) {
-        this._userAlbumLikesService = userAlbumLikesService
+class UserAlbumLikesHandler {
+    constructor(usersAlbumLikesService, albumsService) {
+        this._usersAlbumLikesService = usersAlbumLikesService
         this._albumsService = albumsService
 
-        this.postLikeToAlbumHandler = this.postLikeToAlbumHandler.bind(this)
-        this.getLikesCountHandler = this.getLikesCountHandler.bind(this)
+        this.postUserLikeToAlbumHandler = this.postUserLikeToAlbumHandler.bind(this)
+        this.getUserLikesHandler = this.getUserLikesHandler.bind(this)
     }
 
-    async postLikeToAlbumHandler(request, h) {
+    async postUserLikeToAlbumHandler(request, h) {
         try {
+            const { id: albumId }  = request.params
             const { id: userId } = request.auth.credentials
-            const { albumId } = request.params
 
             await this._albumsService.checkIfAlbumExist(albumId)
 
-            const liked = await this._userAlbumLikesService.verifyAlbumLikeByUser(userId, albumId)
+            const liked = await this._usersAlbumLikesService.verifyAlbumLikeByUser(userId, albumId)
 
             if (!liked) {
-                const likeId = await this._userAlbumLikesService.addLikeToAlbum(userId, albumId)
+                await this._usersAlbumLikesService.addLikeToAlbum(userId, albumId)
                 const response = h.response({
-                                                status: 'success',
-                                                message: 'Like ditambahkan'
-                                            })
+                    status: 'success',
+                    message: 'Like berhasil ditambahkan'
+                })
                 response.code(201)
                 return response
             }
 
-            await this._userAlbumLikesService.deleteLikeFromAlbum(userId, albumId)
-
+            await this._usersAlbumLikesService.deleteLikeFromAlbum(userId, albumId)
             const response = h.response({
                 status: 'success',
-                message: 'Like dibatalkan'
+                message: 'Like berhasil dibatalkan'
             })
             response.code(201)
             return response
@@ -41,7 +40,7 @@ class LikesHandler {
                 const response = h.response({
                                                 status: 'fail',
                                                 message: error.message
-                })
+                                            })
                 response.code(error.statusCode)
                 return response
             }
@@ -55,17 +54,18 @@ class LikesHandler {
         }
     }
 
-    async getLikesCountHandler(request, h) {
+    async getUserLikesHandler(request, h) {
         try {
-            const { albumId } = request.params
-            const likesCount = await this._userAlbumLikesService.getLikesCount(albumId)
+            const { id: albumId } = request.params
+            const likesCount = await this._usersAlbumLikesService.getUserLikesCount(albumId)
 
             const response = h.response({
                 status: 'success',
                 data: {
-                    likes: likesCount
+                    likes: likesCount.count
                 }
             })
+            response.header('X-Data-Source', likesCount.source)
             response.code(200)
             return response
         } catch (error) {
@@ -88,4 +88,4 @@ class LikesHandler {
     }
 }
 
-module.exports = LikesHandler
+module.exports = UserAlbumLikesHandler
