@@ -1,3 +1,3 @@
-const playlists = []
+const playlists = [];
 
-module.exports = playlists
+module.exports = playlists;

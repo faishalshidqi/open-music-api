@@ -1,107 +1,106 @@
 const { Pool } = require('pg');
-const InvariantError = require('../exceptions/InvariantError');
 const { nanoid } = require('nanoid');
 const bcrypt = require('bcrypt');
+const InvariantError = require('../exceptions/InvariantError');
 const NotFoundError = require('../exceptions/NotFoundError');
 const AuthenticationError = require('../exceptions/AuthenticationError');
 
 class UsersService {
-    constructor() {
-        this._pool = new Pool()
+  constructor() {
+    this._pool = new Pool();
+  }
+
+  async verifyNewUsername(username) {
+    const query = {
+      text: 'select username from users where username = $1',
+      values: [username],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (result.rows.length > 0) {
+      throw new InvariantError('Gagal menambahkan user. Username sudah digunakan');
+    }
+  }
+
+  async addUser({ username, password, fullname }) {
+    await this.verifyNewUsername(username);
+
+    const id = `user-${nanoid(16)}`;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const query = {
+      text: 'insert into users values($1, $2, $3, $4) returning id',
+      values: [id, username, hashedPassword, fullname],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new InvariantError('User gagal ditambahkan');
     }
 
-    async verifyNewUsername(username) {
-        const query = {
-            text: 'select username from users where username = $1',
-            values: [username]
-        }
+    return result.rows[0].id;
+  }
 
-        const result = await this._pool.query(query)
+  async getUserById(userId) {
+    const query = {
+      text: 'select id, username, fullname from users where id = $1',
+      values: [userId],
+    };
 
-        if (result.rows.length > 0) {
-            throw new InvariantError('Gagal menambahkan user. Username sudah digunakan')
-        }
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('User tidak ditemukan');
     }
 
-    async addUser({username, password, fullname}) {
-        await this.verifyNewUsername(username)
+    return result.rows[0];
+  }
 
-        const id = `user-${nanoid(16)}`
-        const hashedPassword = await bcrypt.hash(password, 10)
+  async getUsernameById(id) {
+    const query = {
+      text: 'select username from users where id = $1',
+      values: [id],
+    };
 
-        const query = {
-            text: 'insert into users values($1, $2, $3, $4) returning id',
-            values: [id, username, hashedPassword, fullname]
-        }
-
-        const result = await this._pool.query(query)
-
-        if (!result.rows.length) {
-            throw new InvariantError('User gagal ditambahkan')
-        }
-
-        return result.rows[0].id
+    const result = await this._pool.query(query);
+    if (!result.rows.length) {
+      throw new NotFoundError('Username tidak ditemukan');
     }
 
-    async getUserById(userId) {
-        const query = {
-            text: 'select id, username, fullname from users where id = $1',
-            values: [userId]
-        }
+    return result.rows[0];
+  }
 
-        const result = await this._pool.query(query)
+  async verifyUserCredential(username, password) {
+    const query = {
+      text: 'select id, password from users where username = $1',
+      values: [username],
+    };
 
-        if (!result.rows.length) {
-            throw new NotFoundError('User tidak ditemukan')
-        }
+    const result = await this._pool.query(query);
 
-        return result.rows[0]
+    if (!result.rows.length) {
+      throw new AuthenticationError('Kredensial yang Anda berikan salah');
     }
 
-    async getUsernameById(id) {
-        const query = {
-            text: 'select username from users where id = $1',
-            values: [id]
-        }
+    const { id, password: hashedPassword } = result.rows[0];
+    const match = await bcrypt.compare(password, hashedPassword);
 
-        const result = await this._pool.query(query)
-        if (!result.rows.length) {
-            throw new NotFoundError('Username tidak ditemukan')
-        }
-
-        return result.rows[0]
+    if (!match) {
+      throw new AuthenticationError('Kredensial yang Anda berikan salah');
     }
+    return id;
+  }
 
-    async verifyUserCredential(username, password) {
-        const query = {
-            text: 'select id, password from users where username = $1',
-            values: [username]
-        }
-
-        const result = await this._pool.query(query)
-
-        if (!result.rows.length) {
-            throw new AuthenticationError('Kredensial yang Anda berikan salah')
-        }
-
-        const { id, password: hashedPassword } = result.rows[0]
-        const match = await bcrypt.compare(password, hashedPassword)
-
-        if (!match) {
-            throw new AuthenticationError('Kredensial yang Anda berikan salah')
-        }
-        return id
-    }
-
-    async getUsersByUsername(username) {
-        const query = {
-            text: 'select id, username, fullname from users where username like $1',
-            values: [`%${username}%`]
-        }
-        const result = await this._pool.query(query)
-        return result.rows
-    }
-
+  async getUsersByUsername(username) {
+    const query = {
+      text: 'select id, username, fullname from users where username like $1',
+      values: [`%${username}%`],
+    };
+    const result = await this._pool.query(query);
+    return result.rows;
+  }
 }
 
-module.exports = UsersService
+module.exports = UsersService;

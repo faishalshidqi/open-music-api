@@ -1,5 +1,5 @@
-const {Pool} = require('pg');
-const {nanoid} = require('nanoid');
+const { Pool } = require('pg');
+const { nanoid } = require('nanoid');
 const InvariantError = require('../exceptions/InvariantError');
 const NotFoundError = require('../exceptions/NotFoundError');
 
@@ -11,17 +11,19 @@ class SongsService {
   async checkIfSongsAvalaible(id) {
     const checkIfSongAvailable_Query = {
       text: 'select id from songs where id = $1',
-      values: [id]
-    }
+      values: [id],
+    };
 
-    const checkResult = await this._pool.query(checkIfSongAvailable_Query)
+    const checkResult = await this._pool.query(checkIfSongAvailable_Query);
     if (!checkResult.rows.length) {
-      throw new NotFoundError('Lagu gagal ditambahkan. Id lagu tidak ditemukan')
+      throw new NotFoundError('Lagu gagal ditambahkan. Id lagu tidak ditemukan');
     }
   }
 
   async addSong(
-    { title, year, genre, performer, duration, albumId }
+    {
+      title, year, genre, performer, duration, albumId,
+    },
   ) {
     const id = `song-${nanoid(16)}`;
 
@@ -39,7 +41,41 @@ class SongsService {
     return result.rows[0].id;
   }
 
-  async getSongs() {
+  async getSongsByTitle(title) {
+    const query = {
+      text: 'select * from songs where title = $1',
+      values: `%${title}%`,
+    };
+    const result = await this._pool.query(query);
+    return result.rows;
+  }
+
+  async getSongsByPerformer(performer) {
+    const query = {
+      text: 'select * from songs where performer = $1',
+      values: `%${performer}%`,
+    };
+    const result = await this._pool.query(query);
+    return result.rows;
+  }
+
+  async getSongs(title, performer) {
+    if (title && performer) {
+      const query = {
+        text: 'select id, title, performer from songs where lower(title) like $1 and lower(performer) like $2',
+        values: [`%${title}%`, `%${performer}%`],
+      };
+      const result = await this._pool.query(query);
+      return result.rows;
+    }
+    if (title || performer) {
+      const query = {
+        text: 'select id, title, performer from songs where lower(title) like $1 or lower(performer) like $2',
+        values: [`%${title}%`, `%${performer}%`],
+      };
+      const result = await this._pool.query(query);
+      return result.rows;
+    }
     const result = await this._pool.query('select id, title, performer from songs');
     return result.rows;
   }
@@ -58,9 +94,9 @@ class SongsService {
     return result.rows[0];
   }
 
-  async editSongById(
-        id, { title, year, genre, performer, duration, albumId }
-    ) {
+  async editSongById(id, {
+    title, year, genre, performer, duration, albumId,
+  }) {
     const query = {
       text: 'update songs set title = $1, year = $2, genre = $3, performer = $4, duration = $5, "albumId" = $6 where id = $7 returning id',
       values: [title, year, genre, performer, duration, albumId, id],
